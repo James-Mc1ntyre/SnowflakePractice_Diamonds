@@ -1,0 +1,323 @@
+schemaVersion: 3
+meta:
+  sourceVersionId: 2d2b6fd1-d3e9-4d91-aefd-178cc3e9086c # DO NOT CHANGE - Hex uses this to match up project versions when reimporting the file
+  description: null
+  projectId: bb8c016c-88b1-4d51-aecd-7276b7d1c1e9 # DO NOT CHANGE - Unique ID of the project from which this file was generated
+  title: "CUMULATIVE CHALLENGE: Daily Visitors Forecasting_Learners Guide"
+  timezone: null
+  appTheme: SYS_PREF
+  codeLanguage: PYTHON
+  status: null
+  categories: []
+  castDecimalsDefault: true
+  logicQueryCacheTimeout: null
+  publishedQueryCacheTimeout: null
+projectAssets:
+  dataConnections: []
+  envVars: []
+  secrets: []
+sharedAssets:
+  secrets: []
+  vcsPackages: []
+  dataConnections: []
+  externalFileIntegrations: []
+cells:
+  - cellType: MARKDOWN
+    cellId: 827515ff-31c4-46e7-84e0-5c1fb327b181 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "#### 1- Upload Datasets into Snowflake Tables"
+  - cellType: TEXT
+    cellId: f5872d85-946b-4a3f-8c29-ea008f64c652 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      richText:
+        - type: p
+          children:
+            - text: Use Snowflake UI to upload DAILY_VISITORS.csv & DAILY_VISITORS_NEW.csv into Snowflake Internal Stage then create 2 Tables
+        - type: ol
+          children:
+            - type: li
+              children:
+                - type: lic
+                  children:
+                    - bold: true
+                      text: "DAILY_VISITORS "
+                      italic: true
+                    - text: which contains 5 years of historical daily visitors.
+            - type: li
+              children:
+                - type: lic
+                  children:
+                    - bold: true
+                      text: DAILY_VISITORS_NEW
+                      italic: true
+                    - text: " which is a new month (November) for which we want to predict the number of daily visitors."
+  - cellType: MARKDOWN
+    cellId: fd9e70b0-5c12-4213-82c8-2e93b87d58f7 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "#### 2- Import necessary libraries"
+  - cellType: CODE
+    cellId: ee3f20cc-2cf3-4051-86f7-f57d7d8e9224 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # Snowpark for Python
+        from snowflake.snowpark.functions import udf
+        from snowflake.snowpark import types as T
+        import snowflake.snowpark.functions as F
+
+        # Snowpark ML
+        from snowflake.ml.modeling.xgboost import XGBRegressor
+        from snowflake.ml.modeling.pipeline import Pipeline
+        from snowflake.ml.modeling.preprocessing import OrdinalEncoder
+
+        # data science libs
+        import pandas as pd
+        import numpy as np
+        from snowflake.ml.modeling.metrics import r2_score
+
+        # misc
+        import joblib
+        import cachetools
+  - cellType: MARKDOWN
+    cellId: 3c74b4a6-6bf7-4e33-a661-3781d9f64ede # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "#### 3- Create Snowpark Session"
+  - cellType: CODE
+    cellId: 9ae0479a-049b-4d70-b169-da78e94caf1b # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # Use HEX to establish a connection to your Snowflake Account
+        # >Your script goes here...<
+  - cellType: MARKDOWN
+    cellId: 42555dfc-e316-410a-b185-385e96823e43 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "#### 4- Import Daily Visitors Historical Data as a Snowpark DF"
+  - cellType: CODE
+    cellId: 2b6cf4fb-3761-4f51-8a6a-b16691519566 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # Create Snowpark DF for Table DAILY_VISITORS
+        # >Your script goes here...<
+
+        # Show Snowpark DF 
+        # >Your script goes here...<
+  - cellType: TEXT
+    cellId: 5e329663-2f53-42a8-8932-1779142c947b # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      richText:
+        - type: paragraph
+          children:
+            - bold: true
+              text: NOTES
+              italic: true
+              underline: true
+            - text: " : "
+        - type: ul
+          children:
+            - type: li
+              children:
+                - type: lic
+                  children:
+                    - text: "'"
+                    - bold: true
+                      text: DAY
+                    - text: "' is a Categorical column. You will need to transform it into Numerical column using OrdinalEncoder Transformer. "
+            - type: li
+              children:
+                - type: lic
+                  children:
+                    - text: "'"
+                    - bold: true
+                      text: CALENDAR_DATE
+                    - text: "' will be replaced by 'CALENDAR_MTH_DAY_NBR', 'CALENDAR_MTH' and 'CALENDAR_YEAR' columns."
+            - type: li
+              children:
+                - type: lic
+                  children:
+                    - text: "'"
+                    - bold: true
+                      text: HOLIDAY
+                    - text: "' column indicates if that day was a public Holiday or a Weekend. "
+  - cellType: MARKDOWN
+    cellId: 33e39a8c-844f-476b-81f9-6437a7cec4ae # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "#### 5- Split the dataset into Training and Test DFs"
+  - cellType: CODE
+    cellId: 52dc40d5-003f-487e-bad0-d8da3693bd14 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # Since our dataset is a timeseries, we will split it based on a cut-off date (not a random split) to preserve the order and structure.  
+        split_date = '01-Sep-2022'
+
+        # Create Train DF 
+        train_df = DAILY_VISITORS_DF\
+            .select('DAY',\
+                    'CALENDAR_MTH_DAY_NBR',\
+                    'CALENDAR_MTH',\
+                    'CALENDAR_YEAR',\
+                    'HOLIDAY',\
+                    'LAST_YEAR_DAILY_VISITORS',\
+                    'DAILY_VISITORS').\
+            filter((F.col('CALENDAR_DATE') < split_date))
+
+        # Create Test DF Similar to Train_DF 
+        test_df = # >Your script goes here...<
+
+        # NOTE : both 'CALENDAR_DATE' & 'HOLIDAY_NAME' columns are dropped from our DF and will not be used further. 
+        # 'CALENDAR_DATE' will be replaced by 'CALENDAR_MTH_DAY_NBR', 'CALENDAR_MTH' and 'CALENDAR_YEAR' columns.
+
+
+        # Show train_df
+        # >Your script goes here...<
+  - cellType: MARKDOWN
+    cellId: 2e3fbae6-9e10-4797-b23d-85fd08c67f0b # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "#### 6- Categorize columns & Create pipeline"
+  - cellType: CODE
+    cellId: 7bda043d-20ce-44d1-8c59-f1d47726d1a9 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # Categorize all the features for modeling
+        CATEGORICAL_COLUMNS = ["DAY"]
+        CATEGORICAL_COLUMNS_OE = ["CALENDAR_WEEK_DAY_NBR"]
+        NUMERICAL_COLUMNS = ['CALENDAR_MTH_DAY_NBR','CALENDAR_MTH','CALENDAR_YEAR','HOLIDAY','LAST_YEAR_DAILY_VISITORS']
+        LABEL_COLUMNS = ['DAILY_VISITORS']
+        OUTPUT_COLUMNS = ['FORECASTED_DAILY_VISITORS']
+
+        # Create categories to be used in the OrdinalEncoder transformer. 
+        categories = {
+            "DAY": np.array(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]),
+        }
+
+        # Define a pipeline that does the preprocessing (OrdinalEncoder) for column DAY and Regressor (using XGBRegressor model)
+        pipe =  # >Your script goes here...< 
+  - cellType: MARKDOWN
+    cellId: af0bef08-7c21-47f4-a240-726f9a864b0a # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "#### 7- Train the model and check its accuracy using R2"
+  - cellType: CODE
+    cellId: 8c60fa02-4f39-40ea-a984-879bd2e1dc21 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # Train the model by calling .fit()
+        # >Your script goes here...<
+  - cellType: CODE
+    cellId: 8b4ad717-55b8-4f79-abe3-8c9f2db856f0 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # Forecast daily visitors for test_df
+        # >Your script goes here...<
+
+        # Show results
+        # >Your script goes here...<
+
+        # calculate Model Accuracy using R-2 Score 
+        # >Your script goes here...<
+  - cellType: TEXT
+    cellId: c0dcdf4a-6eb8-4a77-97aa-55ee9e42cf8e # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      richText:
+        - type: h4
+          children:
+            - text: "NOTE : "
+              italic: true
+              underline: true
+            - text: "No need for GridSearchCV for hyper-parameters tuning  "
+  - cellType: MARKDOWN
+    cellId: bb24b985-6729-47ae-a4ed-67da216d9c84 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "#### 8- Convert pipeline to sklearn file and Save it into Snowflake Stage"
+  - cellType: CODE
+    cellId: 06508275-2142-489a-ae73-59c14fcbb8f0 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # call pipe.fit(train_df) then convert Model into SKLEARN Object using to_sklearn()
+        # >Your script goes here...<
+
+        # Save the model locally as joblib
+        MODEL_FILE = 'daily_visitors_model.joblib'
+        # >Your script goes here...<
+
+        # Upload the model's joblib file into the Snowflake stage ML_FILES 
+        # >Your script goes here...<
+  - cellType: MARKDOWN
+    cellId: 0d1d4a0b-3446-449b-96f2-9ea15a0cdd7f # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "#### 9- Create Vectorised UDF for Batch Inference"
+  - cellType: CODE
+    cellId: a7aad9c7-441e-45e4-b643-ea467b7e2a19 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # Define a function to read the model from a file
+        # >Your script goes here...<
+
+        # Create a Vectorized UDF for forecasting
+        # >Your script goes here...<
+  - cellType: MARKDOWN
+    cellId: 44b591f9-c3e9-4179-b2d4-88da520854c4 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: "#### 10- Call UDF to forecast Daily Visitors for DAILY_VISITORS_NEW Table and save results into a Snowflake Table"
+  - cellType: CODE
+    cellId: 7c4c0469-129c-4fe9-a5a5-08d20489fff5 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # Load DAILY_VISITORS_NEW Table into a Snowpark DF
+        # >Your script goes here...<
+
+        # Apply the UDF on the Snowpark DF
+        # >Your script goes here...<
+
+        # Show the result
+        # >Your script goes here...<
+  - cellType: CODE
+    cellId: 09355f31-3490-47fe-a4b3-c11763ce86f5 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      source: |-
+        # Write forecasting to a Snowflake table
+        # >Your script goes here...<
+  - cellType: TEXT
+    cellId: 8c74ac28-cf99-43d4-871e-c78e7f3643e6 # DO NOT CHANGE - Hex uses this to match up cells when reimporting the file, and detect any changes to existing cells
+    cellLabel: null
+    config:
+      richText:
+        - type: h1
+          children:
+            - text: ------- END OF THE CUMULATIVE CHALLENGE -------
+appLayout:
+  visibleMetadataFields:
+    - NAME
+    - DESCRIPTION
+    - AUTHOR
+    - LAST_EDITED
+    - LAST_RUN
+    - CATEGORIES
+    - STATUS
+    - TABLE_OF_CONTENTS
+  fullWidth: false
+  tabs:
+    - name: Tab 1
+      rows: []
+sharedFilters: []
